@@ -1,575 +1,549 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    padding: 16px;
-}
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    background: white;
-    border-radius: 24px;
-    padding: 24px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-}
-
-.toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: #333;
-    color: white;
-    padding: 12px 24px;
-    border-radius: 50px;
-    font-size: 14px;
-    z-index: 2000;
-    opacity: 0;
-    transition: all 0.3s ease;
-    pointer-events: none;
-    white-space: nowrap;
-}
-
-.toast.show {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-}
-
-.toast.success {
-    background: #4caf50;
-}
-
-.toast.error {
-    background: #f44336;
-}
-
-header h1 {
-    text-align: center;
-    color: #333;
-    font-size: clamp(1.4rem, 5vw, 2rem);
-    margin-bottom: 24px;
-}
-
-.summary {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.summary-card {
-    padding: 16px;
-    border-radius: 16px;
-    color: white;
-    text-align: center;
-}
-
-.cash-card {
-    background: linear-gradient(135deg, #43a047 0%, #1b5e20 100%);
-}
-
-.saldo-card {
-    background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
-}
-
-.summary-card h3 {
-    font-size: clamp(0.9rem, 4vw, 1.2rem);
-    margin-bottom: 12px;
-}
-
-.total-section {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 14px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 10px;
-    font-size: clamp(0.8rem, 3.5vw, 1rem);
-}
-
-.total-amount {
-    font-weight: bold;
-    font-size: clamp(0.9rem, 4vw, 1.2rem);
-}
-
-.today-info {
-    background: #fff3e0;
-    border-radius: 12px;
-    padding: 10px 16px;
-    margin-bottom: 20px;
-    border-left: 4px solid #ff9800;
-}
-
-.today-text {
-    font-weight: bold;
-    color: #e65100;
-    font-size: clamp(0.8rem, 4vw, 0.95rem);
-}
-
-.calendar-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    gap: 10px;
-}
-
-.nav-btn {
-    background: #667eea;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 40px;
-    cursor: pointer;
-    font-size: 1rem;
-    min-width: 44px;
-    min-height: 44px;
-}
-
-.nav-btn:active {
-    transform: scale(0.95);
-}
-
-#monthYear {
-    font-size: clamp(1rem, 5vw, 1.5rem);
-    color: #333;
-    text-align: center;
-}
-
-.calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
-    margin-bottom: 16px;
-}
-
-.calendar-weekday {
-    text-align: center;
-    font-weight: bold;
-    padding: 10px 4px;
-    background: #f7f7f7;
-    border-radius: 8px;
-    font-size: 0.8rem;
-}
-
-.calendar-day {
-    aspect-ratio: 1;
-    padding: 8px 4px;
-    background: #f9f9f9;
-    border-radius: 10px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #e0e0e0;
-}
-
-.calendar-day:active {
-    transform: scale(0.96);
-}
-
-.calendar-day.has-transaction {
-    background: #c8e6c9;
-    border-color: #4caf50;
-}
-
-.calendar-day.today {
-    background: #fff3e0;
-    border: 2px solid #ff9800;
-}
-
-.calendar-day.empty {
-    background: #f0f0f0;
-    cursor: default;
-    opacity: 0.5;
-    border: 1px solid #e0e0e0;
-}
-
-.day-number {
-    font-size: 1rem;
-    font-weight: bold;
-    color: #333;
-}
-
-.transaction-info {
-    font-size: 0.6rem;
-    text-align: center;
-    line-height: 1.2;
-    margin-top: 3px;
-}
-
-.transaction-item {
-    margin: 1px 0;
-    padding: 1px 2px;
-    border-radius: 3px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.transaction-income {
-    color: #2e7d32;
-}
-
-.transaction-expense {
-    color: #c62828;
-}
-
-.transaction-convert {
-    color: #ff9800;
-}
-
-.legend {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    margin: 16px 0;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #e0e0e0;
-    flex-wrap: wrap;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.75rem;
-}
-
-.legend-color {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-}
-
-.history-section {
-    margin-top: 16px;
-}
-
-.history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-
-.history-header h2 {
-    color: #333;
-    font-size: 1.2rem;
-}
-
-.history-stats {
-    background: #667eea;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-}
-
-.history-controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.filter-buttons {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-}
-
-.filter-btn {
-    padding: 5px 12px;
-    border: 1px solid #ddd;
-    background: white;
-    border-radius: 40px;
-    cursor: pointer;
-    font-size: 0.75rem;
-}
-
-.filter-btn:active {
-    transform: scale(0.95);
-}
-
-.filter-btn.active {
-    background: #667eea;
-    color: white;
-    border-color: #667eea;
-}
-
-.search-wrapper {
-    flex: 1;
-    position: relative;
-    min-width: 150px;
-}
-
-.search-input {
-    width: 100%;
-    padding: 8px 32px 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 40px;
-    font-size: 0.8rem;
-}
-
-.clear-search {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    font-size: 12px;
-    cursor: pointer;
-    color: #999;
-}
-
-.history-table-container {
-    max-height: 350px;
-    overflow-y: auto;
-    overflow-x: auto;
-    border-radius: 12px;
-    border: 1px solid #e0e0e0;
-}
-
-.history-table-container::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-
-.history-table-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
-
-.history-table-container::-webkit-scrollbar-thumb {
-    background: #667eea;
-    border-radius: 10px;
-}
-
-.history-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.75rem;
-    min-width: 480px;
-}
-
-.history-table th {
-    background: #f7f7f7;
-    padding: 10px 8px;
-    position: sticky;
-    top: 0;
-}
-
-.history-table td {
-    padding: 10px 8px;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.history-table tr:hover {
-    background: #f9f9f9;
-}
-
-.cash-badge {
-    background: #e8f5e9;
-    color: #2e7d32;
-    padding: 3px 8px;
-    border-radius: 20px;
-    font-size: 0.65rem;
-    font-weight: bold;
-    display: inline-block;
-}
-
-.saldo-badge {
-    background: #e3f2fd;
-    color: #1565c0;
-    padding: 3px 8px;
-    border-radius: 20px;
-    font-size: 0.65rem;
-    font-weight: bold;
-    display: inline-block;
-}
-
-.convert-badge {
-    background: #fff3e0;
-    color: #e65100;
-    padding: 3px 8px;
-    border-radius: 20px;
-    font-size: 0.65rem;
-    font-weight: bold;
-    display: inline-block;
-}
-
-.transaction-income-badge {
-    color: #2e7d32;
-    font-weight: bold;
-}
-
-.transaction-expense-badge {
-    color: #c62828;
-    font-weight: bold;
-}
-
-.transaction-convert-badge {
-    color: #ff9800;
-    font-weight: bold;
-}
-
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 20px;
-    width: calc(100% - 32px);
-    max-width: 380px;
-    position: relative;
-    margin: auto;
-}
-
-.close {
-    position: absolute;
-    right: 16px;
-    top: 12px;
-    font-size: 24px;
-    cursor: pointer;
-    color: #999;
-}
-
-.close:hover {
-    color: #333;
-}
-
-.form-group {
-    margin-bottom: 16px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: bold;
-    color: #333;
-    font-size: 0.85rem;
-}
-
-.radio-group {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.radio-label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer;
-    font-size: 0.85rem;
-}
-
-.radio-label input {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 10px;
-    border: 2px solid #ddd;
-    border-radius: 10px;
-    font-size: 0.95rem;
-}
-
-.money-input {
-    font-size: 1rem;
-    font-weight: bold;
-    text-align: right;
-}
-
-.btn-primary {
-    width: 100%;
-    padding: 12px;
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 0.9rem;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.btn-primary:active {
-    transform: scale(0.97);
-}
-
-@media (max-width: 600px) {
-    body {
-        padding: 8px;
+let transactionData = {};
+let currentYear = new Date().getFullYear();
+let currentMonth = new Date().getMonth();
+let currentFilter = 'all';
+let searchQuery = '';
+
+const calendarGrid = document.getElementById('calendarGrid');
+const monthYearDisplay = document.getElementById('monthYear');
+const prevMonthBtn = document.getElementById('prevMonth');
+const nextMonthBtn = document.getElementById('nextMonth');
+const modal = document.getElementById('transactionModal');
+const closeBtn = document.querySelector('.close');
+const saveBtn = document.getElementById('saveBtn');
+const transactionAmount = document.getElementById('transactionAmount');
+const modalDateTitle = document.getElementById('modalDateTitle');
+const convertDirectionGroup = document.getElementById('convertDirectionGroup');
+
+let currentEditDate = null;
+
+function formatNumberWithDots(number) {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+transactionAmount.addEventListener('input', function(e) {
+    let cursorPos = e.target.selectionStart;
+    let rawValue = e.target.value;
+    let cleanValue = rawValue.replace(/[^\d]/g, '');
+    if (cleanValue === '') {
+        e.target.value = '';
+        return;
     }
-    .container {
-        padding: 14px;
+    let formatted = formatNumberWithDots(parseInt(cleanValue));
+    e.target.value = formatted;
+    let newCursorPos = cursorPos + (formatted.length - rawValue.length);
+    e.target.setSelectionRange(newCursorPos, newCursorPos);
+});
+
+transactionAmount.addEventListener('focus', function(e) {
+    let rawValue = e.target.value.replace(/\./g, '');
+    if (rawValue === '') return;
+    e.target.value = rawValue;
+});
+
+transactionAmount.addEventListener('blur', function(e) {
+    let rawValue = e.target.value.replace(/[^\d]/g, '');
+    if (rawValue === '') {
+        e.target.value = '';
+        return;
     }
-    .calendar-grid {
-        gap: 4px;
+    e.target.value = formatNumberWithDots(parseInt(rawValue));
+});
+
+function showToast(message, type = 'success') {
+    let toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type} show`;
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2000);
+}
+
+function formatRupiah(amount) {
+    if (isNaN(amount) || amount === null || amount === undefined) return 'Rp 0';
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(amount);
+}
+
+function getValidNumber(value) {
+    let num = parseInt(value);
+    if (isNaN(num)) return 0;
+    if (num < 0) return 0;
+    return num;
+}
+
+function loadData() {
+    let saved = localStorage.getItem('financialCalendar');
+    if (saved) {
+        try {
+            transactionData = JSON.parse(saved);
+        } catch(e) {
+            transactionData = {};
+        }
+    } else {
+        transactionData = {};
     }
-    .calendar-weekday {
-        padding: 6px 2px;
-        font-size: 0.65rem;
+    updateSummary();
+    renderHistory();
+    updateTodayInfo();
+}
+
+function saveData() {
+    localStorage.setItem('financialCalendar', JSON.stringify(transactionData));
+    updateSummary();
+    renderCalendar();
+    renderHistory();
+}
+
+function updateSummary() {
+    let cashTotal = 0;
+    let saldoTotal = 0;
+    
+    for (let date in transactionData) {
+        if (Array.isArray(transactionData[date])) {
+            for (let t of transactionData[date]) {
+                let amount = getValidNumber(t.amount);
+                if (t.moneyType === 'cash') {
+                    if (t.type === 'income') cashTotal += amount;
+                    else if (t.type === 'expense') cashTotal -= amount;
+                    else if (t.type === 'convert') {
+                        if (t.direction === 'cashToSaldo') cashTotal -= amount;
+                        else if (t.direction === 'saldoToCash') cashTotal += amount;
+                    }
+                } else if (t.moneyType === 'saldo') {
+                    if (t.type === 'income') saldoTotal += amount;
+                    else if (t.type === 'expense') saldoTotal -= amount;
+                    else if (t.type === 'convert') {
+                        if (t.direction === 'cashToSaldo') saldoTotal += amount;
+                        else if (t.direction === 'saldoToCash') saldoTotal -= amount;
+                    }
+                }
+            }
+        }
     }
-    .calendar-day {
-        padding: 4px 2px;
-    }
-    .day-number {
-        font-size: 0.8rem;
-    }
-    .transaction-info {
-        font-size: 0.5rem;
-    }
-    .history-table-container {
-        max-height: 280px;
-    }
-    .filter-buttons {
-        width: 100%;
-    }
-    .filter-btn {
-        padding: 4px 10px;
-        font-size: 0.65rem;
-    }
-    .search-wrapper {
-        width: 100%;
-    }
-    .modal-content {
-        padding: 16px;
+    
+    document.getElementById('cashTotal').textContent = formatRupiah(cashTotal);
+    document.getElementById('saldoTotal').textContent = formatRupiah(saldoTotal);
+}
+
+function formatDate(dateStr) {
+    try {
+        let d = new Date(dateStr);
+        return d.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+    } catch(e) {
+        return dateStr;
     }
 }
 
-@media (min-width: 768px) {
-    .calendar-grid {
-        gap: 8px;
-    }
-    .history-table-container {
-        max-height: 450px;
+function formatTime(timestamp) {
+    try {
+        let d = new Date(timestamp);
+        return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    } catch(e) {
+        return '-';
     }
 }
+
+function getTodayString() {
+    let t = new Date();
+    return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+}
+
+function updateTodayInfo() {
+    let t = new Date();
+    let monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    let dayNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    let todayText = document.getElementById('todayDateText');
+    if (todayText) {
+        todayText.innerHTML = `${dayNames[t.getDay()]}, ${t.getDate()} ${monthNames[t.getMonth()]} ${t.getFullYear()}`;
+    }
+}
+
+function getTransactionText(t) {
+    if (t.type === 'convert') {
+        if (t.direction === 'cashToSaldo') return '🔄 Cash → Saldo';
+        return '🔄 Saldo → Cash';
+    }
+    return t.type === 'income' ? '📈 Pemasukan' : '📉 Pengeluaran';
+}
+
+function getTransactionBadgeClass(t) {
+    if (t.type === 'convert') return 'transaction-convert-badge';
+    return t.type === 'income' ? 'transaction-income-badge' : 'transaction-expense-badge';
+}
+
+function renderHistory() {
+    let all = [];
+    for (let date in transactionData) {
+        if (Array.isArray(transactionData[date])) {
+            for (let t of transactionData[date]) {
+                all.push({ date, formattedDate: formatDate(date), ...t });
+            }
+        }
+    }
+    all.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    if (currentFilter === 'cash') all = all.filter(t => t.moneyType === 'cash');
+    else if (currentFilter === 'saldo') all = all.filter(t => t.moneyType === 'saldo');
+    else if (currentFilter === 'income') all = all.filter(t => t.type === 'income');
+    else if (currentFilter === 'expense') all = all.filter(t => t.type === 'expense');
+    else if (currentFilter === 'convert') all = all.filter(t => t.type === 'convert');
+    
+    if (searchQuery) {
+        let q = searchQuery.toLowerCase();
+        all = all.filter(t => 
+            getTransactionText(t).toLowerCase().includes(q) || 
+            formatRupiah(t.amount).includes(q) || 
+            t.formattedDate.toLowerCase().includes(q)
+        );
+    }
+    
+    let historyStats = document.getElementById('historyStats');
+    if (historyStats) historyStats.textContent = `Total: ${all.length} transaksi`;
+    
+    let tbody = document.getElementById('historyBody');
+    if (!tbody) return;
+    
+    if (all.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Tidak ada transaksi</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = '';
+    for (let t of all) {
+        let jenisBadge = t.moneyType === 'cash' ? 'cash-badge' : 'saldo-badge';
+        let jenisText = t.moneyType === 'cash' ? '💵 Cash' : '🏦 Saldo';
+        if (t.type === 'convert') jenisBadge = 'convert-badge';
+        
+        let row = tbody.insertRow();
+        row.insertCell(0).textContent = t.formattedDate;
+        row.insertCell(1).innerHTML = `<span class="${jenisBadge}">${jenisText}</span>`;
+        row.insertCell(2).innerHTML = `<span class="${getTransactionBadgeClass(t)}">${getTransactionText(t)}</span>`;
+        row.insertCell(3).innerHTML = `<span class="${getTransactionBadgeClass(t)}">${formatRupiah(t.amount)}</span>`;
+        row.insertCell(4).innerHTML = `<span style="font-size:0.75em;color:#666;">${formatTime(t.timestamp)}</span>`;
+    }
+}
+
+function renderCalendar() {
+    let year = currentYear;
+    let month = currentMonth;
+    
+    let firstDayOfMonth = new Date(year, month, 1);
+    let startDayOfWeek = firstDayOfMonth.getDay();
+    
+    let startOffset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+    
+    let daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    let monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    monthYearDisplay.textContent = `${monthNames[month]} ${year}`;
+    
+    calendarGrid.innerHTML = '';
+    
+    let weekdays = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+    for (let i = 0; i < weekdays.length; i++) {
+        let div = document.createElement('div');
+        div.className = 'calendar-weekday';
+        div.textContent = weekdays[i];
+        calendarGrid.appendChild(div);
+    }
+    
+    for (let i = 0; i < startOffset; i++) {
+        let emptyDiv = document.createElement('div');
+        emptyDiv.className = 'calendar-day empty';
+        calendarGrid.appendChild(emptyDiv);
+    }
+    
+    let today = new Date();
+    let isCurrentMonth = (year === today.getFullYear() && month === today.getMonth());
+    let todayDate = today.getDate();
+    
+    for (let d = 1; d <= daysInMonth; d++) {
+        let dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        let transactions = transactionData[dateKey] || [];
+        let isToday = (isCurrentMonth && d === todayDate);
+        
+        let dayDiv = document.createElement('div');
+        dayDiv.className = `calendar-day ${transactions.length > 0 ? 'has-transaction' : ''} ${isToday ? 'today' : ''}`;
+        
+        let dayNumber = document.createElement('div');
+        dayNumber.className = 'day-number';
+        dayNumber.textContent = d;
+        dayDiv.appendChild(dayNumber);
+        
+        if (transactions.length > 0) {
+            let infoDiv = document.createElement('div');
+            infoDiv.className = 'transaction-info';
+            let showCount = Math.min(transactions.length, 2);
+            for (let i = 0; i < showCount; i++) {
+                let t = transactions[i];
+                let tDiv = document.createElement('div');
+                let colorClass = 'transaction-income';
+                if (t.type === 'expense') colorClass = 'transaction-expense';
+                if (t.type === 'convert') colorClass = 'transaction-convert';
+                tDiv.className = `transaction-item ${colorClass}`;
+                let symbol = t.type === 'income' ? '↑' : (t.type === 'expense' ? '↓' : '🔄');
+                let moneyIcon = t.moneyType === 'cash' ? '💵' : '🏦';
+                if (t.type === 'convert') {
+                    if (t.direction === 'cashToSaldo') symbol = '💵→🏦';
+                    else symbol = '🏦→💵';
+                }
+                tDiv.innerHTML = `${moneyIcon} ${symbol} ${formatRupiah(t.amount)}`;
+                infoDiv.appendChild(tDiv);
+            }
+            if (transactions.length > 2) {
+                let more = document.createElement('div');
+                more.className = 'transaction-item';
+                more.textContent = `+${transactions.length - 2}`;
+                more.style.fontSize = '0.55em';
+                more.style.color = '#666';
+                infoDiv.appendChild(more);
+            }
+            dayDiv.appendChild(infoDiv);
+        }
+        
+        dayDiv.addEventListener('click', (function(dk, dVal) {
+            return function() { openModal(dk, dVal); };
+        })(dateKey, d));
+        
+        calendarGrid.appendChild(dayDiv);
+    }
+}
+
+function openModal(dateKey, day) {
+    currentEditDate = dateKey;
+    let dt = new Date(dateKey);
+    let monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    modalDateTitle.textContent = `${day} ${monthNames[dt.getMonth()]} ${dt.getFullYear()}`;
+    transactionAmount.value = '';
+    
+    let moneyTypeRadios = document.querySelectorAll('input[name="moneyType"]');
+    if (moneyTypeRadios.length) moneyTypeRadios[0].checked = true;
+    
+    let transTypeRadios = document.querySelectorAll('input[name="transactionType"]');
+    if (transTypeRadios.length) transTypeRadios[0].checked = true;
+    
+    let convertDirectionRadios = document.querySelectorAll('input[name="convertDirection"]');
+    if (convertDirectionRadios.length) convertDirectionRadios[0].checked = true;
+    
+    if (convertDirectionGroup) convertDirectionGroup.style.display = 'none';
+    modal.style.display = 'flex';
+}
+
+function closeModal() {
+    modal.style.display = 'none';
+    currentEditDate = null;
+}
+
+function saveTransaction() {
+    let moneyTypeRadio = document.querySelector('input[name="moneyType"]:checked');
+    let transTypeRadio = document.querySelector('input[name="transactionType"]:checked');
+    let amountValue = transactionAmount.value.trim();
+    
+    if (!moneyTypeRadio || !transTypeRadio) {
+        showToast('Terjadi kesalahan, coba lagi!', 'error');
+        return;
+    }
+    
+    let moneyType = moneyTypeRadio.value;
+    let transType = transTypeRadio.value;
+    
+    if (amountValue === '') {
+        showToast('Masukkan nominal terlebih dahulu!', 'error');
+        return;
+    }
+    
+    let rawAmount = amountValue.replace(/\./g, '');
+    let amount = parseInt(rawAmount);
+    
+    if (isNaN(amount)) {
+        showToast('Masukkan angka yang valid!', 'error');
+        return;
+    }
+    
+    if (amount <= 0) {
+        showToast('Nominal harus lebih dari 0!', 'error');
+        return;
+    }
+    
+    if (!transactionData[currentEditDate]) {
+        transactionData[currentEditDate] = [];
+    }
+    
+    if (transType === 'convert') {
+        let directionRadio = document.querySelector('input[name="convertDirection"]:checked');
+        if (!directionRadio) {
+            showToast('Pilih arah konversi!', 'error');
+            return;
+        }
+        let direction = directionRadio.value;
+        let fromType = direction === 'cashToSaldo' ? 'cash' : 'saldo';
+        let toType = direction === 'cashToSaldo' ? 'saldo' : 'cash';
+        let now = new Date().toISOString();
+        
+        transactionData[currentEditDate].push({
+            id: Date.now() + Math.random(),
+            moneyType: fromType,
+            type: 'convert',
+            direction: direction,
+            amount: amount,
+            timestamp: now
+        });
+        
+        transactionData[currentEditDate].push({
+            id: Date.now() + Math.random() + 1,
+            moneyType: toType,
+            type: 'convert',
+            direction: direction,
+            amount: amount,
+            timestamp: now
+        });
+        
+        showToast(`Berhasil konversi ${formatRupiah(amount)}`, 'success');
+    } else {
+        let typeText = transType === 'income' ? 'Pemasukan' : 'Pengeluaran';
+        transactionData[currentEditDate].push({
+            id: Date.now() + Math.random(),
+            moneyType: moneyType,
+            type: transType,
+            amount: amount,
+            timestamp: new Date().toISOString()
+        });
+        showToast(`${typeText} ${formatRupiah(amount)} berhasil ditambahkan!`, 'success');
+    }
+    
+    saveData();
+    closeModal();
+}
+
+function prevMonth() {
+    currentMonth--;
+    if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+    }
+    renderCalendar();
+}
+
+function nextMonth() {
+    currentMonth++;
+    if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+    }
+    renderCalendar();
+}
+
+if (prevMonthBtn) prevMonthBtn.addEventListener('click', prevMonth);
+if (nextMonthBtn) nextMonthBtn.addEventListener('click', nextMonth);
+if (closeBtn) closeBtn.addEventListener('click', closeModal);
+if (saveBtn) saveBtn.addEventListener('click', saveTransaction);
+
+if (modal) {
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+}
+
+let transTypeRadios = document.querySelectorAll('input[name="transactionType"]');
+for (let r of transTypeRadios) {
+    r.addEventListener('change', function() {
+        if (convertDirectionGroup) {
+            if (this.value === 'convert') {
+                convertDirectionGroup.style.display = 'block';
+            } else {
+                convertDirectionGroup.style.display = 'none';
+            }
+        }
+    });
+}
+
+let filterAll = document.getElementById('filterAll');
+if (filterAll) {
+    filterAll.addEventListener('click', () => {
+        currentFilter = 'all';
+        let btns = document.querySelectorAll('.filter-btn');
+        for (let b of btns) b.classList.remove('active');
+        filterAll.classList.add('active');
+        renderHistory();
+    });
+}
+
+let filterCash = document.getElementById('filterCash');
+if (filterCash) {
+    filterCash.addEventListener('click', () => {
+        currentFilter = 'cash';
+        let btns = document.querySelectorAll('.filter-btn');
+        for (let b of btns) b.classList.remove('active');
+        filterCash.classList.add('active');
+        renderHistory();
+    });
+}
+
+let filterSaldo = document.getElementById('filterSaldo');
+if (filterSaldo) {
+    filterSaldo.addEventListener('click', () => {
+        currentFilter = 'saldo';
+        let btns = document.querySelectorAll('.filter-btn');
+        for (let b of btns) b.classList.remove('active');
+        filterSaldo.classList.add('active');
+        renderHistory();
+    });
+}
+
+let filterIncome = document.getElementById('filterIncome');
+if (filterIncome) {
+    filterIncome.addEventListener('click', () => {
+        currentFilter = 'income';
+        let btns = document.querySelectorAll('.filter-btn');
+        for (let b of btns) b.classList.remove('active');
+        filterIncome.classList.add('active');
+        renderHistory();
+    });
+}
+
+let filterExpense = document.getElementById('filterExpense');
+if (filterExpense) {
+    filterExpense.addEventListener('click', () => {
+        currentFilter = 'expense';
+        let btns = document.querySelectorAll('.filter-btn');
+        for (let b of btns) b.classList.remove('active');
+        filterExpense.classList.add('active');
+        renderHistory();
+    });
+}
+
+let filterConvert = document.getElementById('filterConvert');
+if (filterConvert) {
+    filterConvert.addEventListener('click', () => {
+        currentFilter = 'convert';
+        let btns = document.querySelectorAll('.filter-btn');
+        for (let b of btns) b.classList.remove('active');
+        filterConvert.classList.add('active');
+        renderHistory();
+    });
+}
+
+let searchInput = document.getElementById('searchHistory');
+if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderHistory();
+    });
+}
+
+let clearSearchBtn = document.getElementById('clearSearch');
+if (clearSearchBtn) {
+    clearSearchBtn.addEventListener('click', () => {
+        let search = document.getElementById('searchHistory');
+        if (search) search.value = '';
+        searchQuery = '';
+        renderHistory();
+    });
+}
+
+loadData();
+renderCalendar();
