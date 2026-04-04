@@ -146,30 +146,30 @@ header h1 {
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
+    gap: 6px;
     margin-bottom: 16px;
 }
 
 .calendar-weekday {
     text-align: center;
     font-weight: bold;
-    padding: 8px 2px;
+    padding: 10px 4px;
     background: #f7f7f7;
     border-radius: 8px;
-    font-size: clamp(0.65rem, 3vw, 0.8rem);
+    font-size: 0.8rem;
 }
 
 .calendar-day {
     aspect-ratio: 1;
-    padding: 4px 2px;
+    padding: 8px 4px;
     background: #f9f9f9;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border: 1px solid transparent;
+    border: 1px solid #e0e0e0;
 }
 
 .calendar-day:active {
@@ -190,23 +190,25 @@ header h1 {
     background: #f0f0f0;
     cursor: default;
     opacity: 0.5;
+    border: 1px solid #e0e0e0;
 }
 
 .day-number {
-    font-size: clamp(0.7rem, 3.5vw, 1rem);
+    font-size: 1rem;
     font-weight: bold;
     color: #333;
 }
 
 .transaction-info {
-    font-size: clamp(0.45rem, 2.5vw, 0.6rem);
+    font-size: 0.6rem;
     text-align: center;
     line-height: 1.2;
+    margin-top: 3px;
 }
 
 .transaction-item {
     margin: 1px 0;
-    padding: 1px;
+    padding: 1px 2px;
     border-radius: 3px;
     white-space: nowrap;
     overflow: hidden;
@@ -228,7 +230,7 @@ header h1 {
 .legend {
     display: flex;
     justify-content: center;
-    gap: 12px;
+    gap: 16px;
     margin: 16px 0;
     padding-bottom: 16px;
     border-bottom: 1px solid #e0e0e0;
@@ -238,8 +240,8 @@ header h1 {
 .legend-item {
     display: flex;
     align-items: center;
-    gap: 5px;
-    font-size: clamp(0.6rem, 3vw, 0.75rem);
+    gap: 6px;
+    font-size: 0.75rem;
 }
 
 .legend-color {
@@ -263,7 +265,7 @@ header h1 {
 
 .history-header h2 {
     color: #333;
-    font-size: clamp(1rem, 5vw, 1.3rem);
+    font-size: 1.2rem;
 }
 
 .history-stats {
@@ -294,7 +296,7 @@ header h1 {
     background: white;
     border-radius: 40px;
     cursor: pointer;
-    font-size: clamp(0.65rem, 3vw, 0.8rem);
+    font-size: 0.75rem;
 }
 
 .filter-btn:active {
@@ -359,7 +361,7 @@ header h1 {
 .history-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: clamp(0.65rem, 3vw, 0.8rem);
+    font-size: 0.75rem;
     min-width: 480px;
 }
 
@@ -530,17 +532,20 @@ header h1 {
         padding: 14px;
     }
     .calendar-grid {
-        gap: 3px;
+        gap: 4px;
     }
     .calendar-weekday {
-        padding: 5px 1px;
-        font-size: 0.6rem;
+        padding: 6px 2px;
+        font-size: 0.65rem;
     }
     .calendar-day {
-        padding: 3px 1px;
+        padding: 4px 2px;
     }
     .day-number {
-        font-size: 0.65rem;
+        font-size: 0.8rem;
+    }
+    .transaction-info {
+        font-size: 0.5rem;
     }
     .history-table-container {
         max-height: 280px;
@@ -550,7 +555,7 @@ header h1 {
     }
     .filter-btn {
         padding: 4px 10px;
-        font-size: 0.6rem;
+        font-size: 0.65rem;
     }
     .search-wrapper {
         width: 100%;
