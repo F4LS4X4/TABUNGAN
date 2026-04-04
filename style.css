@@ -1,0 +1,570 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 16px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #333;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 14px;
+    z-index: 2000;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.toast.success {
+    background: #4caf50;
+}
+
+.toast.error {
+    background: #f44336;
+}
+
+header h1 {
+    text-align: center;
+    color: #333;
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    margin-bottom: 24px;
+}
+
+.summary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.summary-card {
+    padding: 16px;
+    border-radius: 16px;
+    color: white;
+    text-align: center;
+}
+
+.cash-card {
+    background: linear-gradient(135deg, #43a047 0%, #1b5e20 100%);
+}
+
+.saldo-card {
+    background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
+}
+
+.summary-card h3 {
+    font-size: clamp(0.9rem, 4vw, 1.2rem);
+    margin-bottom: 12px;
+}
+
+.total-section {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    font-size: clamp(0.8rem, 3.5vw, 1rem);
+}
+
+.total-amount {
+    font-weight: bold;
+    font-size: clamp(0.9rem, 4vw, 1.2rem);
+}
+
+.today-info {
+    background: #fff3e0;
+    border-radius: 12px;
+    padding: 10px 16px;
+    margin-bottom: 20px;
+    border-left: 4px solid #ff9800;
+}
+
+.today-text {
+    font-weight: bold;
+    color: #e65100;
+    font-size: clamp(0.8rem, 4vw, 0.95rem);
+}
+
+.calendar-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.nav-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 40px;
+    cursor: pointer;
+    font-size: 1rem;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.nav-btn:active {
+    transform: scale(0.95);
+}
+
+#monthYear {
+    font-size: clamp(1rem, 5vw, 1.5rem);
+    color: #333;
+    text-align: center;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 16px;
+}
+
+.calendar-weekday {
+    text-align: center;
+    font-weight: bold;
+    padding: 8px 2px;
+    background: #f7f7f7;
+    border-radius: 8px;
+    font-size: clamp(0.65rem, 3vw, 0.8rem);
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    padding: 4px 2px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+}
+
+.calendar-day:active {
+    transform: scale(0.96);
+}
+
+.calendar-day.has-transaction {
+    background: #c8e6c9;
+    border-color: #4caf50;
+}
+
+.calendar-day.today {
+    background: #fff3e0;
+    border: 2px solid #ff9800;
+}
+
+.calendar-day.empty {
+    background: #f0f0f0;
+    cursor: default;
+    opacity: 0.5;
+}
+
+.day-number {
+    font-size: clamp(0.7rem, 3.5vw, 1rem);
+    font-weight: bold;
+    color: #333;
+}
+
+.transaction-info {
+    font-size: clamp(0.45rem, 2.5vw, 0.6rem);
+    text-align: center;
+    line-height: 1.2;
+}
+
+.transaction-item {
+    margin: 1px 0;
+    padding: 1px;
+    border-radius: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.transaction-income {
+    color: #2e7d32;
+}
+
+.transaction-expense {
+    color: #c62828;
+}
+
+.transaction-convert {
+    color: #ff9800;
+}
+
+.legend {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 16px 0;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0e0e0;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: clamp(0.6rem, 3vw, 0.75rem);
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+
+.history-section {
+    margin-top: 16px;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.history-header h2 {
+    color: #333;
+    font-size: clamp(1rem, 5vw, 1.3rem);
+}
+
+.history-stats {
+    background: #667eea;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+}
+
+.history-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 5px 12px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 40px;
+    cursor: pointer;
+    font-size: clamp(0.65rem, 3vw, 0.8rem);
+}
+
+.filter-btn:active {
+    transform: scale(0.95);
+}
+
+.filter-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.search-wrapper {
+    flex: 1;
+    position: relative;
+    min-width: 150px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 8px 32px 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 40px;
+    font-size: 0.8rem;
+}
+
+.clear-search {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    color: #999;
+}
+
+.history-table-container {
+    max-height: 350px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+}
+
+.history-table-container::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.history-table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.history-table-container::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 10px;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: clamp(0.65rem, 3vw, 0.8rem);
+    min-width: 480px;
+}
+
+.history-table th {
+    background: #f7f7f7;
+    padding: 10px 8px;
+    position: sticky;
+    top: 0;
+}
+
+.history-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.history-table tr:hover {
+    background: #f9f9f9;
+}
+
+.cash-badge {
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.saldo-badge {
+    background: #e3f2fd;
+    color: #1565c0;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.convert-badge {
+    background: #fff3e0;
+    color: #e65100;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.transaction-income-badge {
+    color: #2e7d32;
+    font-weight: bold;
+}
+
+.transaction-expense-badge {
+    color: #c62828;
+    font-weight: bold;
+}
+
+.transaction-convert-badge {
+    color: #ff9800;
+    font-weight: bold;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    width: calc(100% - 32px);
+    max-width: 380px;
+    position: relative;
+    margin: auto;
+}
+
+.close {
+    position: absolute;
+    right: 16px;
+    top: 12px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+}
+
+.close:hover {
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+    color: #333;
+    font-size: 0.85rem;
+}
+
+.radio-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.radio-label input {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-size: 0.95rem;
+}
+
+.money-input {
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: right;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-primary:active {
+    transform: scale(0.97);
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 8px;
+    }
+    .container {
+        padding: 14px;
+    }
+    .calendar-grid {
+        gap: 3px;
+    }
+    .calendar-weekday {
+        padding: 5px 1px;
+        font-size: 0.6rem;
+    }
+    .calendar-day {
+        padding: 3px 1px;
+    }
+    .day-number {
+        font-size: 0.65rem;
+    }
+    .history-table-container {
+        max-height: 280px;
+    }
+    .filter-buttons {
+        width: 100%;
+    }
+    .filter-btn {
+        padding: 4px 10px;
+        font-size: 0.6rem;
+    }
+    .search-wrapper {
+        width: 100%;
+    }
+    .modal-content {
+        padding: 16px;
+    }
+}
+
+@media (min-width: 768px) {
+    .calendar-grid {
+        gap: 8px;
+    }
+    .history-table-container {
+        max-height: 450px;
+    }
+}
