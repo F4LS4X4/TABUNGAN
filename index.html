@@ -3,15 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <meta name="theme-color" content="#667eea">
+    <meta name="theme-color" content="#ff6f91">
     <title>Kalender Keuangan</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h3>📋 Menu</h3>
+            <button id="closeSidebarBtn" class="close-sidebar">&times;</button>
+        </div>
+        <div class="sidebar-menu">
+            <button id="menuSavings" class="sidebar-btn">💰 Tabungan</button>
+            <button id="menuCalculator" class="sidebar-btn">🧮 Kalkulator</button>
+            <button id="menuNotes" class="sidebar-btn">📝 Catatan</button>
+        </div>
+    </div>
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
     <div class="container">
-        <header>
+        <div class="app-header">
+            <button id="hamburgerBtn" class="hamburger">☰</button>
             <h1>📅 Kalender Keuangan</h1>
-        </header>
+        </div>
 
         <div id="toast" class="toast"></div>
 
@@ -32,6 +46,12 @@
             </div>
         </div>
 
+        <div class="total-saving-wrapper">
+            <button id="totalSavingBtn" class="total-saving-btn">
+                💰 Total Tabungan <span id="totalSavingAmount">Rp 0</span>
+            </button>
+        </div>
+
         <div class="today-info">
             <div class="today-badge">
                 <span class="today-icon">📆</span>
@@ -48,9 +68,9 @@
         <div class="calendar-grid" id="calendarGrid"></div>
 
         <div class="legend">
-            <div class="legend-item"><div class="legend-color" style="background:#e8f5e9;"></div><span>Belum ada transaksi</span></div>
-            <div class="legend-item"><div class="legend-color" style="background:#c8e6c9;"></div><span>Ada transaksi</span></div>
-            <div class="legend-item"><div class="legend-color" style="background:#fff3e0;border:2px solid #ff9800;"></div><span>Hari Ini</span></div>
+            <div class="legend-item"><div class="legend-color" style="background:#ffe0e7;"></div><span>Belum ada transaksi</span></div>
+            <div class="legend-item"><div class="legend-color" style="background:#ffc0d0;"></div><span>Ada transaksi</span></div>
+            <div class="legend-item"><div class="legend-color" style="background:#fff0e6;border:2px solid #ff8c42;"></div><span>Hari Ini</span></div>
         </div>
 
         <div class="history-section">
@@ -68,14 +88,18 @@
                     <button id="filterConvert" class="filter-btn">🔄 Konversi</button>
                 </div>
                 <div class="search-wrapper">
-                    <input type="text" id="searchHistory" placeholder="🔍 Cari..." class="search-input">
+                    <input type="text" id="searchHistory" placeholder="🔍 Cari (tanggal, nominal, tipe, jenis)..." class="search-input">
                     <button id="clearSearch" class="clear-search">✖</button>
                 </div>
             </div>
             <div class="history-table-container">
                 <table class="history-table">
-                    <thead><tr><th>Tanggal</th><th>Jenis</th><th>Tipe</th><th>Jumlah</th><th>Waktu</th></tr></thead>
-                    <tbody id="historyBody"><tr><td colspan="5" style="text-align:center;">Belum ada transaksi</td></tr></tbody>
+                    <thead>
+                        <tr><th>Tanggal</th><th>Jenis</th><th>Tipe</th><th>Jumlah</th><th>Waktu</th></tr>
+                    </thead>
+                    <tbody id="historyBody">
+                        <tr><td colspan="5" style="text-align:center;">Belum ada transaksi</td></tr>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -109,9 +133,36 @@
             </div>
             <div class="form-group">
                 <label for="transactionAmount">Jumlah (Rp)</label>
-                <input type="text" id="transactionAmount" placeholder="0" class="money-input">
+                <input type="text" id="transactionAmount" placeholder="0" class="money-input" maxlength="15">
             </div>
-            <button id="saveBtn" class="btn-primary">Simpan</button>
+            <button id="saveBtn" class="btn-primary">Simpan Transaksi</button>
+        </div>
+    </div>
+
+    <div id="calculatorModal" class="modal">
+        <div class="modal-content calculator-modal">
+            <span class="close-calc close">&times;</span>
+            <h3>🧮 Kalkulator</h3>
+            <input type="text" id="calcDisplay" class="calc-display" readonly value="0">
+            <div class="calc-buttons">
+                <button class="calc-btn" data-val="7">7</button><button class="calc-btn" data-val="8">8</button><button class="calc-btn" data-val="9">9</button><button class="calc-btn operator" data-op="/">÷</button>
+                <button class="calc-btn" data-val="4">4</button><button class="calc-btn" data-val="5">5</button><button class="calc-btn" data-val="6">6</button><button class="calc-btn operator" data-op="*">×</button>
+                <button class="calc-btn" data-val="1">1</button><button class="calc-btn" data-val="2">2</button><button class="calc-btn" data-val="3">3</button><button class="calc-btn operator" data-op="-">−</button>
+                <button class="calc-btn" data-val="0">0</button><button class="calc-btn" data-val="00">00</button><button class="calc-btn" data-val=".">.</button><button class="calc-btn operator" data-op="+">+</button>
+                <button class="calc-btn clear" id="calcClear">C</button><button class="calc-btn equals" id="calcEqual">=</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notesModal" class="modal">
+        <div class="modal-content notes-modal">
+            <span class="close-notes close">&times;</span>
+            <h3>📝 Catatan</h3>
+            <div class="notes-input-group">
+                <input type="text" id="noteInput" placeholder="Tulis catatan baru..." class="note-input">
+                <button id="addNoteBtn" class="add-note-btn">Tambah</button>
+            </div>
+            <ul id="notesList" class="notes-list"></ul>
         </div>
     </div>
 
