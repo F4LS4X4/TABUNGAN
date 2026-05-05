@@ -62,7 +62,7 @@ document.querySelectorAll('.calc-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
         if (btn.classList.contains('operator')) {
             let op = btn.getAttribute('data-op');
-            let ops = { '/': '/', '*': '*', '-': '-', '+': '+' };
+            const ops = { '/': '/', '*': '*', '-': '-', '+': '+' };
             op = ops[op];
             if (currentCalc === '0') currentCalc = '0';
             if (validateCalcExpression(currentCalc, op)) {
@@ -186,17 +186,32 @@ function showToast(message, type = 'success') {
     toast.className = `toast ${type} show`;
     setTimeout(() => toast.classList.remove('show'), 2200);
 }
+
 function getCurrentSaldo() {
     let cashTotal = 0, saldoTotal = 0;
     for (let date in transactionData) {
         if (Array.isArray(transactionData[date])) {
             for (let t of transactionData[date]) {
                 let amount = getValidNumber(t.amount);
+
                 if (t.type === 'convert') {
-                    if (t.fromMoney === 'cash') cashTotal -= amount;
-                    else if (t.fromMoney === 'saldo') saldoTotal -= amount;
-                    if (t.toMoney === 'cash') cashTotal += amount;
-                    else if (t.toMoney === 'saldo') saldoTotal += amount;
+
+                    if (t.fromMoney && t.toMoney) {
+                        if (t.fromMoney === 'cash') cashTotal -= amount;
+                        if (t.fromMoney === 'saldo') saldoTotal -= amount;
+                        if (t.toMoney === 'cash') cashTotal += amount;
+                        if (t.toMoney === 'saldo') saldoTotal += amount;
+                    } 
+                   
+                    else if (t.direction) {
+                        if (t.direction === 'cashToSaldo') {
+                            cashTotal -= amount;
+                            saldoTotal += amount;
+                        } else if (t.direction === 'saldoToCash') {
+                            saldoTotal -= amount;
+                            cashTotal += amount;
+                        }
+                    }
                 } else {
                     if (t.moneyType === 'cash') {
                         if (t.type === 'income') cashTotal += amount;
@@ -211,6 +226,58 @@ function getCurrentSaldo() {
     }
     return { cashTotal, saldoTotal };
 }
+
+function migrateOldConvertData() {
+    let changed = false;
+    for (let date in transactionData) {
+        if (Array.isArray(transactionData[date])) {
+            const newList = [];
+            let i = 0;
+            while (i < transactionData[date].length) {
+                const t = transactionData[date][i];
+                // Cek apakah ini pasangan konversi lama (dua entri dengan timestamp sama)
+                if (t.type === 'convert' && !t.fromMoney && t.direction) {
+                    // Cari pasangan berikutnya dengan timestamp yang sama
+                    let foundPair = false;
+                    for (let j = i+1; j < transactionData[date].length; j++) {
+                        const t2 = transactionData[date][j];
+                        if (t2.type === 'convert' && t2.timestamp === t.timestamp && t2.direction === t.direction) {
+                            // Gabungkan menjadi satu entri
+                            const newConvert = {
+                                id: t.id,
+                                moneyType: 'convert',
+                                type: 'convert',
+                                direction: t.direction,
+                                fromMoney: t.direction === 'cashToSaldo' ? 'cash' : 'saldo',
+                                toMoney: t.direction === 'cashToSaldo' ? 'saldo' : 'cash',
+                                amount: t.amount,
+                                timestamp: t.timestamp
+                            };
+                            newList.push(newConvert);
+                            i = j + 1; // lewati kedua entri
+                            foundPair = true;
+                            changed = true;
+                            break;
+                        }
+                    }
+                    if (!foundPair) {
+                        // jika tidak ada pasangan, tetap simpan sebagai konversi (mungkin data rusak)
+                        newList.push(t);
+                        i++;
+                    }
+                } else {
+                    newList.push(t);
+                    i++;
+                }
+            }
+            transactionData[date] = newList;
+        }
+    }
+    if (changed) {
+        saveDataImmediate();
+    }
+}
+
 function loadData() {
     try {
         const saved = localStorage.getItem('financialCalendar');
@@ -219,11 +286,14 @@ function loadData() {
         transactionData = {};
         showToast('Data rusak, menggunakan data baru', 'error');
     }
+    migrateOldConvertData(); // perbaiki data lama
     limitHistorySize();
     updateSummaryAndTotal();
     renderHistory();
     updateTodayInfo();
+    renderCalendar();
 }
+
 function limitHistorySize(maxEntries = 1000) {
     let allTrans = [];
     for (let date in transactionData) {
@@ -252,9 +322,11 @@ function limitHistorySize(maxEntries = 1000) {
         saveDataImmediate();
     }
 }
+
 function saveDataImmediate() {
     localStorage.setItem('financialCalendar', JSON.stringify(transactionData));
 }
+
 function saveData() {
     limitHistorySize();
     saveDataImmediate();
@@ -262,12 +334,14 @@ function saveData() {
     renderCalendar();
     renderHistory();
 }
+
 function updateSummaryAndTotal() {
     let { cashTotal, saldoTotal } = getCurrentSaldo();
     document.getElementById('cashTotal').textContent = formatRupiah(cashTotal);
     document.getElementById('saldoTotal').textContent = formatRupiah(saldoTotal);
     document.getElementById('totalSavingAmount').textContent = formatRupiah(cashTotal + saldoTotal);
 }
+
 function updateTodayInfo() {
     const t = new Date();
     const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
@@ -275,6 +349,7 @@ function updateTodayInfo() {
     const todayText = document.getElementById('todayDateText');
     if (todayText) todayText.innerHTML = `${dayNames[t.getDay()]}, ${t.getDate()} ${monthNames[t.getMonth()]} ${t.getFullYear()}`;
 }
+
 function renderHistory() {
     let all = [];
     for (let date in transactionData) {
@@ -288,6 +363,7 @@ function renderHistory() {
         }
     }
     all.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
     if (currentFilter !== 'all') {
         if (currentFilter === 'cash') all = all.filter(t => t.moneyType === 'cash' || (t.type === 'convert' && (t.fromMoney === 'cash' || t.toMoney === 'cash')));
         else if (currentFilter === 'saldo') all = all.filter(t => t.moneyType === 'saldo' || (t.type === 'convert' && (t.fromMoney === 'saldo' || t.toMoney === 'saldo')));
@@ -295,6 +371,7 @@ function renderHistory() {
         else if (currentFilter === 'expense') all = all.filter(t => t.type === 'expense');
         else if (currentFilter === 'convert') all = all.filter(t => t.type === 'convert');
     }
+    
     if (searchQuery) {
         const q = searchQuery.toLowerCase();
         all = all.filter(t => {
@@ -311,6 +388,7 @@ function renderHistory() {
                    tipe.includes(q);
         });
     }
+    
     document.getElementById('historyStats').textContent = `Total: ${all.length} transaksi`;
     const tbody = document.getElementById('historyBody');
     if (!tbody) return;
@@ -347,6 +425,7 @@ function renderHistory() {
         row.insertCell(4).innerHTML = new Date(t.timestamp).toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
     });
 }
+
 function renderCalendar() {
     const year = currentYear, month = currentMonth;
     const firstDay = new Date(year, month, 1);
@@ -413,6 +492,7 @@ function renderCalendar() {
         calendarGrid.appendChild(dayDiv);
     }
 }
+
 function openModal(dateKey, day) {
     currentEditDate = dateKey;
     const parts = dateKey.split('-');
@@ -426,6 +506,7 @@ function openModal(dateKey, day) {
     modal.style.display = 'flex';
 }
 function closeModalFn() { modal.style.display = 'none'; }
+
 function validateBalance(moneyType, transType, amount, direction = null) {
     const { cashTotal, saldoTotal } = getCurrentSaldo();
     if (transType === 'expense') {
@@ -437,6 +518,7 @@ function validateBalance(moneyType, transType, amount, direction = null) {
     }
     return true;
 }
+
 let isSaving = false;
 async function saveTransaction() {
     if (isSaving) return;
@@ -455,6 +537,7 @@ async function saveTransaction() {
         const amount = parseInt(rawAmount);
         if (isNaN(amount) || amount <= 0) { showToast('Nominal harus lebih dari 0', 'error'); return; }
         if (amount > 9999999999999) { showToast('Nominal terlalu besar', 'error'); return; }
+        
         if (transType === 'convert') {
             const direction = document.querySelector('input[name="convertDirection"]:checked')?.value;
             if (!direction) { showToast('Pilih arah konversi', 'error'); return; }
@@ -499,6 +582,7 @@ async function saveTransaction() {
         saveBtn.disabled = false;
     }
 }
+
 saveBtn.addEventListener('click', saveTransaction);
 closeBtn.addEventListener('click', closeModalFn);
 prevMonthBtn.addEventListener('click', () => { currentMonth--; if (currentMonth < 0) { currentMonth = 11; currentYear--; } renderCalendar(); });
@@ -506,6 +590,7 @@ nextMonthBtn.addEventListener('click', () => { currentMonth++; if (currentMonth 
 document.querySelectorAll('input[name="transactionType"]').forEach(r => {
     r.addEventListener('change', function() { convertDirectionGroup.style.display = this.value === 'convert' ? 'block' : 'none'; });
 });
+
 const filterMap = { filterAll:'all', filterCash:'cash', filterSaldo:'saldo', filterIncome:'income', filterExpense:'expense', filterConvert:'convert' };
 Object.entries(filterMap).forEach(([id, val]) => {
     document.getElementById(id).addEventListener('click', () => {
@@ -515,6 +600,7 @@ Object.entries(filterMap).forEach(([id, val]) => {
         renderHistory();
     });
 });
+
 document.getElementById('searchHistory').addEventListener('input', (e) => { searchQuery = e.target.value; renderHistory(); });
 document.getElementById('clearSearch').addEventListener('click', () => { document.getElementById('searchHistory').value = ''; searchQuery = ''; renderHistory(); });
 transactionAmount.addEventListener('input', function(e) {
