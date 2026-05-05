@@ -55,6 +55,7 @@ menuCalc.addEventListener('click', () => {
     calcModal.style.display = 'flex';
     currentCalc = '0';
     calcDisplay.value = '0';
+    closeSidebarFn();
 });
 closeCalc.addEventListener('click', () => calcModal.style.display = 'none');
 document.querySelectorAll('.calc-btn').forEach(btn => {
@@ -191,19 +192,18 @@ function getCurrentSaldo() {
         if (Array.isArray(transactionData[date])) {
             for (let t of transactionData[date]) {
                 let amount = getValidNumber(t.amount);
-                if (t.moneyType === 'cash') {
-                    if (t.type === 'income') cashTotal += amount;
-                    else if (t.type === 'expense') cashTotal -= amount;
-                    else if (t.type === 'convert') {
-                        if (t.direction === 'cashToSaldo') cashTotal -= amount;
-                        else if (t.direction === 'saldoToCash') cashTotal += amount;
-                    }
-                } else if (t.moneyType === 'saldo') {
-                    if (t.type === 'income') saldoTotal += amount;
-                    else if (t.type === 'expense') saldoTotal -= amount;
-                    else if (t.type === 'convert') {
-                        if (t.direction === 'cashToSaldo') saldoTotal += amount;
-                        else if (t.direction === 'saldoToCash') saldoTotal -= amount;
+                if (t.type === 'convert') {
+                    if (t.fromMoney === 'cash') cashTotal -= amount;
+                    else if (t.fromMoney === 'saldo') saldoTotal -= amount;
+                    if (t.toMoney === 'cash') cashTotal += amount;
+                    else if (t.toMoney === 'saldo') saldoTotal += amount;
+                } else {
+                    if (t.moneyType === 'cash') {
+                        if (t.type === 'income') cashTotal += amount;
+                        else if (t.type === 'expense') cashTotal -= amount;
+                    } else if (t.moneyType === 'saldo') {
+                        if (t.type === 'income') saldoTotal += amount;
+                        else if (t.type === 'expense') saldoTotal -= amount;
                     }
                 }
             }
@@ -237,7 +237,16 @@ function limitHistorySize(maxEntries = 1000) {
         const newData = {};
         for (let t of keep) {
             if (!newData[t.date]) newData[t.date] = [];
-            newData[t.date].push({ id: t.id, moneyType: t.moneyType, type: t.type, direction: t.direction, amount: t.amount, timestamp: t.timestamp });
+            newData[t.date].push({
+                id: t.id,
+                moneyType: t.moneyType,
+                type: t.type,
+                direction: t.direction,
+                fromMoney: t.fromMoney,
+                toMoney: t.toMoney,
+                amount: t.amount,
+                timestamp: t.timestamp
+            });
         }
         transactionData = newData;
         saveDataImmediate();
@@ -280,8 +289,8 @@ function renderHistory() {
     }
     all.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
     if (currentFilter !== 'all') {
-        if (currentFilter === 'cash') all = all.filter(t => t.moneyType === 'cash');
-        else if (currentFilter === 'saldo') all = all.filter(t => t.moneyType === 'saldo');
+        if (currentFilter === 'cash') all = all.filter(t => t.moneyType === 'cash' || (t.type === 'convert' && (t.fromMoney === 'cash' || t.toMoney === 'cash')));
+        else if (currentFilter === 'saldo') all = all.filter(t => t.moneyType === 'saldo' || (t.type === 'convert' && (t.fromMoney === 'saldo' || t.toMoney === 'saldo')));
         else if (currentFilter === 'income') all = all.filter(t => t.type === 'income');
         else if (currentFilter === 'expense') all = all.filter(t => t.type === 'expense');
         else if (currentFilter === 'convert') all = all.filter(t => t.type === 'convert');
@@ -289,8 +298,13 @@ function renderHistory() {
     if (searchQuery) {
         const q = searchQuery.toLowerCase();
         all = all.filter(t => {
-            const jenis = t.moneyType === 'cash' ? 'cash' : (t.type === 'convert' ? 'konversi' : 'saldo');
-            const tipe = t.type === 'income' ? 'pemasukan' : (t.type === 'expense' ? 'pengeluaran' : (t.direction === 'cashToSaldo' ? 'cash ke saldo' : 'saldo ke cash'));
+            let jenis = '';
+            if (t.type === 'convert') jenis = 'konversi';
+            else jenis = t.moneyType === 'cash' ? 'cash' : 'saldo';
+            let tipe = '';
+            if (t.type === 'income') tipe = 'pemasukan';
+            else if (t.type === 'expense') tipe = 'pengeluaran';
+            else tipe = t.direction === 'cashToSaldo' ? 'cash ke saldo' : 'saldo ke cash';
             return t.formattedDate.toLowerCase().includes(q) ||
                    formatRupiah(t.amount).toLowerCase().includes(q) ||
                    jenis.includes(q) ||
@@ -305,11 +319,29 @@ function renderHistory() {
     all.forEach(t => {
         const row = tbody.insertRow();
         row.insertCell(0).textContent = t.formattedDate;
-        let jenisBadge = t.moneyType === 'cash' ? 'cash-badge' : (t.type === 'convert' ? 'convert-badge' : 'saldo-badge');
-        let jenisText = t.moneyType === 'cash' ? '💵 Cash' : (t.type === 'convert' ? '🔄 Konversi' : '🏦 Saldo');
+        let jenisBadge = '', jenisText = '';
+        if (t.type === 'convert') {
+            jenisBadge = 'convert-badge';
+            jenisText = '🔄 Konversi';
+        } else if (t.moneyType === 'cash') {
+            jenisBadge = 'cash-badge';
+            jenisText = '💵 Cash';
+        } else {
+            jenisBadge = 'saldo-badge';
+            jenisText = '🏦 Saldo';
+        }
         row.insertCell(1).innerHTML = `<span class="${jenisBadge}">${jenisText}</span>`;
-        let tipeText = t.type === 'income' ? '📈 Pemasukan' : (t.type === 'expense' ? '📉 Pengeluaran' : (t.direction === 'cashToSaldo' ? '🔄 Cash → Saldo' : '🔄 Saldo → Cash'));
-        let tipeClass = t.type === 'income' ? 'transaction-income-badge' : (t.type === 'expense' ? 'transaction-expense-badge' : 'transaction-convert-badge');
+        let tipeText = '', tipeClass = '';
+        if (t.type === 'income') {
+            tipeText = '📈 Pemasukan';
+            tipeClass = 'transaction-income-badge';
+        } else if (t.type === 'expense') {
+            tipeText = '📉 Pengeluaran';
+            tipeClass = 'transaction-expense-badge';
+        } else {
+            tipeText = t.direction === 'cashToSaldo' ? '🔄 Cash → Saldo' : '🔄 Saldo → Cash';
+            tipeClass = 'transaction-convert-badge';
+        }
         row.insertCell(2).innerHTML = `<span class="${tipeClass}">${tipeText}</span>`;
         row.insertCell(3).innerHTML = formatRupiah(t.amount);
         row.insertCell(4).innerHTML = new Date(t.timestamp).toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
@@ -354,10 +386,19 @@ function renderCalendar() {
             for (let i = 0; i < Math.min(transactions.length, 2); i++) {
                 const t = transactions[i];
                 const line = document.createElement('div');
-                let colorClass = t.type === 'income' ? 'transaction-income' : (t.type === 'expense' ? 'transaction-expense' : 'transaction-convert');
+                let colorClass = '';
+                if (t.type === 'income') colorClass = 'transaction-income';
+                else if (t.type === 'expense') colorClass = 'transaction-expense';
+                else colorClass = 'transaction-convert';
                 line.className = `transaction-item ${colorClass}`;
-                let symbol = t.type === 'income' ? '↑' : (t.type === 'expense' ? '↓' : (t.direction === 'cashToSaldo' ? '💵→🏦' : '🏦→💵'));
-                line.innerHTML = `${t.moneyType === 'cash' ? '💵' : '🏦'} ${symbol} ${formatRupiah(t.amount)}`;
+                let symbol = '';
+                if (t.type === 'income') symbol = '↑';
+                else if (t.type === 'expense') symbol = '↓';
+                else symbol = t.direction === 'cashToSaldo' ? '💵→🏦' : '🏦→💵';
+                let moneyIcon = '';
+                if (t.type === 'convert') moneyIcon = '🔄';
+                else moneyIcon = t.moneyType === 'cash' ? '💵' : '🏦';
+                line.innerHTML = `${moneyIcon} ${symbol} ${formatRupiah(t.amount)}`;
                 infoDiv.appendChild(line);
             }
             if (transactions.length > 2) {
@@ -402,40 +443,46 @@ async function saveTransaction() {
     isSaving = true;
     saveBtn.disabled = true;
     try {
-        const moneyType = document.querySelector('input[name="moneyType"]:checked')?.value;
-        const transType = document.querySelector('input[name="transactionType"]:checked')?.value;
+        const moneyTypeRadio = document.querySelector('input[name="moneyType"]:checked');
+        const transTypeRadio = document.querySelector('input[name="transactionType"]:checked');
+        if (!moneyTypeRadio || !transTypeRadio) {
+            showToast('Pilih jenis transaksi', 'error');
+            return;
+        }
+        const moneyType = moneyTypeRadio.value;
+        const transType = transTypeRadio.value;
         let rawAmount = transactionAmount.value.replace(/\./g, '');
         const amount = parseInt(rawAmount);
         if (isNaN(amount) || amount <= 0) { showToast('Nominal harus lebih dari 0', 'error'); return; }
         if (amount > 9999999999999) { showToast('Nominal terlalu besar', 'error'); return; }
         if (transType === 'convert') {
             const direction = document.querySelector('input[name="convertDirection"]:checked')?.value;
+            if (!direction) { showToast('Pilih arah konversi', 'error'); return; }
             if (!validateBalance(moneyType, transType, amount, direction)) {
                 showToast('Saldo tidak mencukupi untuk konversi', 'error');
                 return;
             }
-        } else if (transType === 'expense') {
-            if (!validateBalance(moneyType, transType, amount)) {
-                showToast('Saldo tidak mencukupi untuk pengeluaran', 'error');
-                return;
-            }
-        }
-        if (!transactionData[currentEditDate]) transactionData[currentEditDate] = [];
-        if (transType === 'convert') {
-            const direction = document.querySelector('input[name="convertDirection"]:checked')?.value;
+            if (!transactionData[currentEditDate]) transactionData[currentEditDate] = [];
             const now = new Date().toISOString();
+            const fromMoney = direction === 'cashToSaldo' ? 'cash' : 'saldo';
+            const toMoney = direction === 'cashToSaldo' ? 'saldo' : 'cash';
             transactionData[currentEditDate].push({
                 id: Date.now(),
                 moneyType: 'convert',
                 type: 'convert',
                 direction: direction,
+                fromMoney: fromMoney,
+                toMoney: toMoney,
                 amount: amount,
-                timestamp: now,
-                fromMoney: direction === 'cashToSaldo' ? 'cash' : 'saldo',
-                toMoney: direction === 'cashToSaldo' ? 'saldo' : 'cash'
+                timestamp: now
             });
             showToast(`Konversi ${formatRupiah(amount)} berhasil`, 'success');
         } else {
+            if (transType === 'expense' && !validateBalance(moneyType, transType, amount)) {
+                showToast('Saldo tidak mencukupi untuk pengeluaran', 'error');
+                return;
+            }
+            if (!transactionData[currentEditDate]) transactionData[currentEditDate] = [];
             transactionData[currentEditDate].push({
                 id: Date.now(),
                 moneyType: moneyType,
